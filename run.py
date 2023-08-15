@@ -9,7 +9,7 @@ if os.geteuid() != 0:
     exit(1)
 
 root = "/media/usb"
-local = os.path.join(os.path.expanduser("~"), "snap/dolphin-emulator/common/.local/share/dolphin-emu/Load/WiiSDSync")
+local = os.path.join(os.path.expanduser("~sid"), "snap/dolphin-emulator/common/.local/share/dolphin-emu/Load/WiiSDSync")
 
 
 def check_usb():
