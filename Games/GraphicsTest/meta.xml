@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<app version="1">
+    <name>GraphicsTest</name>
+    <coder>Sid110307</coder>
+    <version>1.0</version>
+    <short_description>Simple graphics engine</short_description>
+    <long_description>A 3D graphics engine that uses GRRLIB.</long_description>
+</app>
