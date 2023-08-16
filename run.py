@@ -62,7 +62,8 @@ def main():
 
         for game_dir in game_dirs:
             bin_path = os.path.join("Games", game_dir, "bin")
-            elf_files = [file for file in os.listdir(bin_path) if file.endswith(".elf")]
+            elf_files = [file for file in os.listdir(bin_path if os.path.isdir(bin_path) else "Games") if
+                         file.endswith(".elf")]
             game_files.extend(os.path.join(bin_path, elf) for elf in elf_files)
 
         for index, file in enumerate(game_files, start=1):

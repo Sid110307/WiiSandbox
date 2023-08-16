@@ -5,24 +5,24 @@
 #include <wiiuse/wpad.h>
 
 static void *xfb = NULL;
-static GXRModeObj *rmode = NULL;
+static GXRModeObj *screenMode = NULL;
 
 void initialize()
 {
     VIDEO_Init();
     WPAD_Init();
 
-    rmode = VIDEO_GetPreferredMode(NULL);
-    xfb = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
-    console_init(xfb, 20, 20, rmode->fbWidth, rmode->xfbHeight, rmode->fbWidth * VI_DISPLAY_PIX_SZ);
+    screenMode = VIDEO_GetPreferredMode(NULL);
+    xfb = MEM_K0_TO_K1(SYS_AllocateFramebuffer(screenMode));
+    console_init(xfb, 20, 20, screenMode->fbWidth, screenMode->xfbHeight, screenMode->fbWidth * VI_DISPLAY_PIX_SZ);
 
-    VIDEO_Configure(rmode);
+    VIDEO_Configure(screenMode);
     VIDEO_SetNextFramebuffer(xfb);
     VIDEO_SetBlack(FALSE);
     VIDEO_Flush();
     VIDEO_WaitVSync();
 
-    if (rmode->viTVMode & VI_NON_INTERLACE) VIDEO_WaitVSync();
+    if (screenMode->viTVMode & VI_NON_INTERLACE) VIDEO_WaitVSync();
 }
 
 int main()
