@@ -19,7 +19,7 @@ CFLAGS = -g -O2 -Wall $(MACHDEP) $(INCLUDE)
 CXXFLAGS = $(CFLAGS)
 LDFLAGS = -g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 
-LIBS := -lgrrlib -lfreetype -lbz2 -lfat -ljpeg -lpngu -lpng -lz -lwiiuse -lbte -logc -lm
+LIBS := -lgrrlib -lfreetype -lbz2 -lfat -ljpeg -lpngu -lpng -lz -lasnd -lmad -lwiiuse -lbte -logc -lm
 LIBDIRS := $(PORTLIBS)
 
 ifneq ($(BUILD),$(notdir $(CURDIR)))
@@ -39,10 +39,8 @@ else
 	export LD := $(CXX)
 endif
 
-export OFILES_BIN := $(addsuffix .o,$(BINFILES))
 export OFILES_SOURCES := $(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(sFILES:.s=.o) $(SFILES:.S=.o)
-export OFILES := $(OFILES_BIN) $(OFILES_SOURCES)
-export HFILES := $(addsuffix .h,$(subst .,_,$(BINFILES)))
+export OFILES := $(OFILES_SOURCES)
 export INCLUDE := $(foreach dir,$(INCLUDES),-iquote $(CURDIR)/$(dir)) $(foreach dir,$(LIBDIRS),-I$(dir)/include) \
 				-I$(CURDIR)/$(BUILD) -I$(LIBOGC_INC)
 export LIBPATHS := -L$(LIBOGC_LIB) $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
@@ -51,11 +49,11 @@ export OUTPUT := $(CURDIR)/$(TARGET)
 .PHONY: $(BUILD) clean
 
 $(BUILD):
-	@[ -d $@ ] || mkdir -p $@
-	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+	[ -d $@ ] || mkdir -p $@
+	$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 clean:
-	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
+	rm -rf $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
 
 run:
 	wiiload $(TARGET).dol
@@ -66,10 +64,6 @@ DEPENDS := $(OFILES:.o=.d)
 
 $(OUTPUT).dol: $(OUTPUT).elf
 $(OUTPUT).elf: $(OFILES)
-$(OFILES_SOURCES): $(HFILES)
-
-%.jpg.o %_jpg.h: %.jpg
-	$(bin2o)
 
 -include $(DEPENDS)
 
@@ -80,4 +74,5 @@ all: $(BUILD)
 	sudo mv $(OUTPUT).elf $(BUILD)/boot.elf
 	sudo mv $(OUTPUT).dol $(BUILD)/$(TARGET).dol
 	sudo cp meta.xml $(BUILD)/meta.xml
+	sudo cp $(foreach dir,$(DATA),$(wildcard $(dir)/*.*)) $(BUILD)
 	@echo "===== Done! Now run \"make run\" to upload the program to the Wii. ====="

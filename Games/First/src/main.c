@@ -4,7 +4,7 @@
 #include <gccore.h>
 #include <wiiuse/wpad.h>
 
-static void *xfb = NULL;
+static void *framebuffer = NULL;
 static GXRModeObj *screenMode = NULL;
 
 void initialize()
@@ -13,11 +13,11 @@ void initialize()
     WPAD_Init();
 
     screenMode = VIDEO_GetPreferredMode(NULL);
-    xfb = MEM_K0_TO_K1(SYS_AllocateFramebuffer(screenMode));
-    console_init(xfb, 20, 20, screenMode->fbWidth, screenMode->xfbHeight, screenMode->fbWidth * VI_DISPLAY_PIX_SZ);
+    framebuffer = MEM_K0_TO_K1(SYS_AllocateFramebuffer(screenMode));
+    console_init(framebuffer, 20, 20, screenMode->fbWidth, screenMode->xfbHeight, screenMode->fbWidth * VI_DISPLAY_PIX_SZ);
 
     VIDEO_Configure(screenMode);
-    VIDEO_SetNextFramebuffer(xfb);
+    VIDEO_SetNextFramebuffer(framebuffer);
     VIDEO_SetBlack(FALSE);
     VIDEO_Flush();
     VIDEO_WaitVSync();

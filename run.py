@@ -8,13 +8,14 @@ if os.geteuid() != 0:
     print("This script must be run as root.")
     exit(1)
 
-root = "/media/usb"
-local = os.path.join(os.path.expanduser("~sid"), "snap/dolphin-emulator/common/.local/share/dolphin-emu/Load/WiiSDSync")
+DATA_EXTENSIONS = [".dol", ".xml", ".mp3", ".png", ".jpg", ".ttf"]
+ROOT = "/media/usb"
+LOCAL = os.path.join(os.path.expanduser("~sid"), "snap/dolphin-emulator/common/.local/share/dolphin-emu/Load/WiiSDSync")
 
 
 def check_usb():
-    if not os.path.exists(root):
-        print(f"USB drive not mounted ({root}).")
+    if not os.path.exists(ROOT):
+        print(f"USB drive not mounted ({ROOT}).")
         exit(1)
 
 
@@ -35,7 +36,7 @@ def main():
     if sys.argv[1] == "list":
         check_usb()
 
-        for root_dir in {root, local}:
+        for root_dir in {ROOT, LOCAL}:
             print(f"Games in {root_dir}:")
 
             try:
@@ -49,7 +50,7 @@ def main():
                     game_files.extend(os.path.join(bin_path, elf) for elf in elf_files)
 
                 for index, file in enumerate(game_files, start=1):
-                    print(f"  {index}) {file.replace(root_dir, '').replace('/bin', '')}")
+                    print(f"  {index}) {file.replace(root_dir, '').replace('/apps/', '')[:-9]}")
             except FileNotFoundError:
                 print("  No games found.")
 
@@ -74,14 +75,14 @@ def main():
         if 0 <= choice < len(game_files):
             selected_file = game_files[choice]
 
-            for root_dir in {root, local}:
+            for root_dir in {ROOT, LOCAL}:
                 app_folder = os.path.join(root_dir, "apps",
                                           os.path.dirname(selected_file).replace("Games/", "").replace("/bin", ""))
                 os.makedirs(app_folder, exist_ok=True)
                 shutil.copy(selected_file, os.path.join(app_folder, os.path.basename(selected_file)))
 
                 for file in os.listdir(os.path.dirname(selected_file)):
-                    if file.endswith(".dol") or file.endswith(".xml"):
+                    if any(file.endswith(ext) for ext in DATA_EXTENSIONS):
                         shutil.copy(os.path.join(os.path.dirname(selected_file), file), app_folder)
         else:
             print("Invalid choice.")
@@ -135,10 +136,9 @@ else
 	export LD := $(CXX)
 endif
 
-export OFILES_BIN := $(addsuffix .o,$(BINFILES))
 export OFILES_SOURCES := $(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(sFILES:.s=.o) $(SFILES:.S=.o)
+export OFILES := $(OFILES_SOURCES)
 export OFILES := $(OFILES_BIN) $(OFILES_SOURCES)
-export HFILES := $(addsuffix .h,$(subst .,_,$(BINFILES)))
 export INCLUDE := $(foreach dir,$(INCLUDES),-iquote $(CURDIR)/$(dir)) $(foreach dir,$(LIBDIRS),-I$(dir)/include) \\
 				-I$(CURDIR)/$(BUILD) -I$(LIBOGC_INC)
 export LIBPATHS := -L$(LIBOGC_LIB) $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
@@ -147,11 +147,11 @@ export OUTPUT := $(CURDIR)/$(TARGET)
 .PHONY: $(BUILD) clean
 
 $(BUILD):
-	@[ -d $@ ] || mkdir -p $@
-	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+	[ -d $@ ] || mkdir -p $@
+	$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 clean:
-	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
+	rm -rf $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
 
 run:
 	wiiload $(TARGET).dol
@@ -162,10 +162,6 @@ DEPENDS := $(OFILES:.o=.d)
 
 $(OUTPUT).dol: $(OUTPUT).elf
 $(OUTPUT).elf: $(OFILES)
-$(OFILES_SOURCES): $(HFILES)
-
-%.jpg.o %_jpg.h: %.jpg
-	$(bin2o)
 
 -include $(DEPENDS)
 
@@ -176,6 +172,7 @@ all: $(BUILD)
 	sudo mv $(OUTPUT).elf $(BUILD)/boot.elf
 	sudo mv $(OUTPUT).dol $(BUILD)/$(TARGET).dol
 	sudo cp meta.xml $(BUILD)/meta.xml
+	sudo cp $(foreach dir,$(DATA),$(wildcard $(dir)/*.*)) $(BUILD)
 	@echo "===== Done! Now run \\"make run\\" to upload the program to the Wii. ====="
 """)
 
