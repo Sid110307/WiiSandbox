@@ -45,39 +45,33 @@ void initialize()
     if (screenMode->viTVMode & VI_NON_INTERLACE) VIDEO_WaitVSync();
 }
 
+void *readFile(const char *path, long *size)
+{
+    FILE *file = fopen(path, "rb");
+    if (file == NULL)
+    {
+        printf("Failed to open file \"%s\"!\n", path);
+        exit(EXIT_FAILURE);
+    }
+
+    fseek(file, 0, SEEK_END);
+    *size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    void *buffer = malloc(*size);
+    fread(buffer, 1, *size, file);
+    fclose(file);
+
+    return buffer;
+}
+
 int main()
 {
     initialize();
 
-    FILE *file = fopen("sd:/apps/GraphicsTest/music.mp3", "rb");
-    if (file == NULL)
-    {
-        printf("Failed to open music file!\n");
-        exit(1);
-    }
-
-    fseek(file, 0, SEEK_END);
-    long size = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    void *buffer = malloc(size);
-    fread(buffer, 1, size, file);
-    fclose(file);
-
-    file = fopen("sd:/apps/GraphicsTest/font.ttf", "rb");
-    if (file == NULL)
-    {
-        printf("Failed to open font file!\n");
-        exit(1);
-    }
-
-    fseek(file, 0, SEEK_END);
-    size = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    void *fontBuffer = malloc(size);
-    fread(fontBuffer, 1, size, file);
-    fclose(file);
+    long size;
+    void *fontBuffer = readFile("sd:/apps/Pong/font.ttf", &size);
+    void *musicBuffer = readFile("sd:/apps/Pong/music.mp3", &size);
 
     f32 player1Y = SCREEN_HEIGHT / 2 - PLAYER_HEIGHT / 2, player2Y = SCREEN_HEIGHT / 2 - PLAYER_HEIGHT / 2;
     f32 ballX = SCREEN_WIDTH / 2 - BALL_SIZE / 2, ballY = SCREEN_HEIGHT / 2 - BALL_SIZE / 2;
@@ -90,9 +84,9 @@ int main()
     while (1)
     {
         WPAD_ScanPads();
-        if (!MP3Player_IsPlaying()) MP3Player_PlayBuffer(buffer, size, NULL);
+        if (!MP3Player_IsPlaying()) MP3Player_PlayBuffer(musicBuffer, size, NULL);
 
-        if (WPAD_ButtonsDown(0) & WPAD_BUTTON_HOME) exit(0);
+        if (WPAD_ButtonsDown(0) & WPAD_BUTTON_HOME) exit(EXIT_SUCCESS);
         if (WPAD_ButtonsHeld(0) & WPAD_BUTTON_UP && player1Y > 0) player1Y -= PLAYER_SPEED;
         if (WPAD_ButtonsHeld(0) & WPAD_BUTTON_DOWN && player1Y < SCREEN_HEIGHT - PLAYER_HEIGHT)
             player1Y += PLAYER_SPEED;
@@ -169,8 +163,8 @@ int main()
         GRRLIB_Render();
     }
 
-    free(buffer);
     free(fontBuffer);
+    free(musicBuffer);
     GRRLIB_Exit();
 
     return EXIT_SUCCESS;
