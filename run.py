@@ -37,7 +37,7 @@ def main():
     if sys.argv[1] == "list":
         check_usb()
 
-        for root_dir in {ROOT, LOCAL}:
+        for root_dir in [ROOT, LOCAL]:
             print(f"Projects in {root_dir}:")
 
             try:
@@ -77,7 +77,7 @@ def main():
             choice = int(input("Choose a project to upload: ")) - 1
             selection = project_files[choice]
 
-            for root_dir in {ROOT, LOCAL}:
+            for root_dir in [ROOT, LOCAL]:
                 project = os.path.join(root_dir, "apps",
                                        os.path.dirname(selection).replace(f"{PROJECT_DIR}/", "").replace("/bin", ""))
                 os.makedirs(project, exist_ok=True)
