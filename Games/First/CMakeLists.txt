@@ -3,7 +3,7 @@ project(First)
 
 set(WIILOAD "tcp:192.168.0.113")
 set(DEVKITPPC "/opt/devkitpro/devkitPPC")
-set(TARGET ${PROJECT_NAME} CACHE STRING "Name of the executable to be created.")
+set(TARGET ${PROJECT_NAME})
 
 if (NOT DEFINED DEVKITPPC)
     message(FATAL_ERROR "Please set DEVKITPPC in your environment. export DEVKITPPC=<path to>devkitPPC")
@@ -24,6 +24,6 @@ add_executable(${TARGET} ${SOURCES} ${BINFILES})
 target_link_libraries(${TARGET} wiiuse bte ogc m)
 set_target_properties(${TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
-add_custom_target(copy_files COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/meta.xml ${CMAKE_SOURCE_DIR}/bin/meta.xml)
-add_dependencies(${TARGET} copy_files)
-add_custom_target(run COMMAND wiiload ${CMAKE_SOURCE_DIR}/bin/${TARGET} DEPENDS ${TARGET})
+add_custom_target(${TARGET}_copy_files COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/meta.xml ${CMAKE_SOURCE_DIR}/bin/meta.xml)
+add_dependencies(${TARGET} ${TARGET}_copy_files)
+add_custom_target(${TARGET}_run COMMAND wiiload ${CMAKE_SOURCE_DIR}/bin/${TARGET}.dol DEPENDS ${TARGET})
