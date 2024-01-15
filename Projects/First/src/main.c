@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 
 #include <gccore.h>
 #include <wiiuse/wpad.h>
@@ -10,8 +9,6 @@ static GXRModeObj* screenMode = NULL;
 
 void initialize()
 {
-    srand(time(NULL));
-
     VIDEO_Init();
     WPAD_Init();
 
@@ -32,7 +29,7 @@ void initialize()
 int main()
 {
     initialize();
-    printf("\033[2;0HHello World!\n\nPress A to print HELLO\nPress B to print WORLD\nPress 1 for magic\nPress HOME to exit\n\n");
+    printf("\033[2;0HHello World!\n\nPress A to print HELLO\nPress B to print WORLD\nPress HOME to exit\n\n");
 
     while (1)
     {
@@ -41,8 +38,6 @@ int main()
 
         if (pressed & WPAD_BUTTON_A) printf("HELLO");
         if (pressed & WPAD_BUTTON_B) printf("WORLD");
-        if (pressed & WPAD_BUTTON_1)
-            for (int i = 0; i < screenMode->fbWidth * screenMode->xfbHeight; ++i) ((u32*) framebuffer)[i] = rand();
         if (pressed & WPAD_BUTTON_HOME) break;
 
         VIDEO_WaitVSync();

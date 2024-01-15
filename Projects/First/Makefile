@@ -51,11 +51,11 @@ export OUTPUT := $(CURDIR)/$(TARGET)
 .PHONY: $(BUILD) clean
 
 $(BUILD):
-	@[ -d $@ ] || mkdir -p $@
-	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+	[ -d $@ ] || mkdir -p $@
+	$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 clean:
-	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
+	rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
 
 run:
 	wiiload $(TARGET).dol
@@ -80,4 +80,4 @@ all: $(BUILD)
 	sudo mv $(OUTPUT).elf $(BUILD)/boot.elf
 	sudo mv $(OUTPUT).dol $(BUILD)/$(TARGET).dol
 	sudo cp meta.xml $(BUILD)/meta.xml
-	@echo "===== Done! Now run \"make run\" to upload the program to the Wii. ====="
+	echo "===== Done! Now run \"make run\" to upload the program to the Wii. ====="

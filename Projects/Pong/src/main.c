@@ -53,7 +53,7 @@ void* readFile(const char* path, long* size)
     if (file == NULL)
     {
         printf("Failed to open file \"%s\"!\n", path);
-        exit(EXIT_FAILURE);
+        return NULL;
     }
 
     fseek(file, 0, SEEK_END);
@@ -75,20 +75,25 @@ int main()
     void* fontBuffer = readFile("sd:/apps/Pong/font.ttf", &size);
     void* musicBuffer = readFile("sd:/apps/Pong/music.mp3", &size);
 
-    f32 player1Y = SCREEN_HEIGHT / 2 - PLAYER_HEIGHT / 2, player2Y = SCREEN_HEIGHT / 2 - PLAYER_HEIGHT / 2;
-    f32 ballX = SCREEN_WIDTH / 2 - BALL_SIZE / 2, ballY = SCREEN_HEIGHT / 2 - BALL_SIZE / 2;
+    f32 player1Y = (SCREEN_HEIGHT - PLAYER_HEIGHT) / 2.0f, player2Y = (SCREEN_HEIGHT - PLAYER_HEIGHT) / 2.0f;
+    f32 ballX = (SCREEN_WIDTH - BALL_SIZE) / 2.0f, ballY = (SCREEN_HEIGHT - BALL_SIZE) / 2.0f;
     f32 ballSpeedX = 0, ballSpeedY = 0;
     u32 color = 0xFFFFFFFF;
     int gameStarted = 0, player1Score = 0, player2Score = 0;
     GRRLIB_ttfFont* font = GRRLIB_LoadTTF(fontBuffer, size);
 
-    printf("Press A to start the game!\n");
+    printf("P1 Controls: Up/Down\n");
+    printf("P2 Controls: 1/2\n");
+    printf("Randomize color: B\n");
+    printf("Start game: A\n");
+    printf("Exit: Home\n");
+
     while (1)
     {
         WPAD_ScanPads();
         if (!MP3Player_IsPlaying()) MP3Player_PlayBuffer(musicBuffer, size, NULL);
 
-        if (WPAD_ButtonsDown(0) & WPAD_BUTTON_HOME) exit(EXIT_SUCCESS);
+        if (WPAD_ButtonsDown(0) & WPAD_BUTTON_HOME) break;
         if (WPAD_ButtonsHeld(0) & WPAD_BUTTON_UP && player1Y > 0) player1Y -= PLAYER_SPEED;
         if (WPAD_ButtonsHeld(0) & WPAD_BUTTON_DOWN && player1Y < SCREEN_HEIGHT - PLAYER_HEIGHT)
             player1Y += PLAYER_SPEED;
@@ -100,8 +105,9 @@ int main()
             gameStarted = 1;
             player1Score = 0;
             player2Score = 0;
-            ballX = SCREEN_WIDTH / 2 - BALL_SIZE / 2;
-            ballY = SCREEN_HEIGHT / 2 - BALL_SIZE / 2;
+
+            ballX = (SCREEN_WIDTH - BALL_SIZE) / 2.0f;
+            ballY = (SCREEN_HEIGHT - BALL_SIZE) / 2.0f;
             ballSpeedX = INITIAL_BALL_SPEED_X;
             ballSpeedY = INITIAL_BALL_SPEED_Y;
         }
@@ -117,34 +123,36 @@ int main()
             if (ballX <= 0)
             {
                 player2Score++;
-                ballX = SCREEN_WIDTH / 2 - BALL_SIZE / 2;
-                ballY = SCREEN_HEIGHT / 2 - BALL_SIZE / 2;
+
+                ballX = (SCREEN_WIDTH - BALL_SIZE) / 2.0f;
+                ballY = (SCREEN_HEIGHT - BALL_SIZE) / 2.0f;
                 ballSpeedX = INITIAL_BALL_SPEED_X;
                 ballSpeedY = INITIAL_BALL_SPEED_Y;
             }
             if (ballX >= SCREEN_WIDTH - BALL_SIZE)
             {
                 player1Score++;
-                ballX = SCREEN_WIDTH / 2 - BALL_SIZE / 2;
-                ballY = SCREEN_HEIGHT / 2 - BALL_SIZE / 2;
+
+                ballX = (SCREEN_WIDTH - BALL_SIZE) / 2.0f;
+                ballY = (SCREEN_HEIGHT - BALL_SIZE) / 2.0f;
                 ballSpeedX = INITIAL_BALL_SPEED_X;
                 ballSpeedY = INITIAL_BALL_SPEED_Y;
             }
 
             if (player1Score == WIN_SCORE || player2Score == WIN_SCORE)
             {
-                gameStarted = 0;
-                player1Score = 0;
-                player2Score = 0;
-                ballX = SCREEN_WIDTH / 2 - BALL_SIZE / 2;
-                ballY = SCREEN_HEIGHT / 2 - BALL_SIZE / 2;
-                ballSpeedX = 0;
-                ballSpeedY = 0;
-
                 GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 8, SCREEN_HEIGHT / 2 - 8, font, "GAME OVER", 1, color);
                 GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 8, SCREEN_HEIGHT / 2 + 8, font,
                                  player1Score == WIN_SCORE ? "P1 WINS!" : "P2 WINS!", 1, color);
-                GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 8, SCREEN_HEIGHT / 2 + 24, font, "Press A to play again", 1, color);
+
+                gameStarted = 0;
+                player1Score = 0;
+                player2Score = 0;
+
+                ballX = (SCREEN_WIDTH - BALL_SIZE) / 2.0f;
+                ballY = (SCREEN_HEIGHT - BALL_SIZE) / 2.0f;
+                ballSpeedX = 0;
+                ballSpeedY = 0;
             }
 
             ballX += ballSpeedX;
