@@ -12,14 +12,16 @@
 #define SCREEN_HEIGHT 480
 #define PLAYER_WIDTH 10
 #define PLAYER_HEIGHT 60
+
 #define BALL_SIZE 10
 #define WIN_SCORE 10
 #define PLAYER_SPEED 4
+
 #define INITIAL_BALL_SPEED_X 3
 #define INITIAL_BALL_SPEED_Y 2
 
-static void *framebuffer = NULL;
-static GXRModeObj *screenMode = NULL;
+static void* framebuffer = NULL;
+static GXRModeObj* screenMode = NULL;
 
 void initialize()
 {
@@ -45,9 +47,9 @@ void initialize()
     if (screenMode->viTVMode & VI_NON_INTERLACE) VIDEO_WaitVSync();
 }
 
-void *readFile(const char *path, long *size)
+void* readFile(const char* path, long* size)
 {
-    FILE *file = fopen(path, "rb");
+    FILE* file = fopen(path, "rb");
     if (file == NULL)
     {
         printf("Failed to open file \"%s\"!\n", path);
@@ -58,7 +60,7 @@ void *readFile(const char *path, long *size)
     *size = ftell(file);
     fseek(file, 0, SEEK_SET);
 
-    void *buffer = malloc(*size);
+    void* buffer = malloc(*size);
     fread(buffer, 1, *size, file);
     fclose(file);
 
@@ -70,15 +72,15 @@ int main()
     initialize();
 
     long size;
-    void *fontBuffer = readFile("sd:/apps/Pong/font.ttf", &size);
-    void *musicBuffer = readFile("sd:/apps/Pong/music.mp3", &size);
+    void* fontBuffer = readFile("sd:/apps/Pong/font.ttf", &size);
+    void* musicBuffer = readFile("sd:/apps/Pong/music.mp3", &size);
 
     f32 player1Y = SCREEN_HEIGHT / 2 - PLAYER_HEIGHT / 2, player2Y = SCREEN_HEIGHT / 2 - PLAYER_HEIGHT / 2;
     f32 ballX = SCREEN_WIDTH / 2 - BALL_SIZE / 2, ballY = SCREEN_HEIGHT / 2 - BALL_SIZE / 2;
     f32 ballSpeedX = 0, ballSpeedY = 0;
     u32 color = 0xFFFFFFFF;
     int gameStarted = 0, player1Score = 0, player2Score = 0;
-    GRRLIB_ttfFont *font = GRRLIB_LoadTTF(fontBuffer, size);
+    GRRLIB_ttfFont* font = GRRLIB_LoadTTF(fontBuffer, size);
 
     printf("Press A to start the game!\n");
     while (1)

@@ -94,86 +94,36 @@ def main():
         os.makedirs(os.path.join("Games", name, "src"), exist_ok=True)
         open(os.path.join("Games", name, "src", "main.c"), "w").close()
 
-        with open(os.path.join("Games", name, "Makefile"), "w") as f:
-            f.writelines("""export WIILOAD = tcp:192.168.0.113
-export DEVKITPPC = /opt/devkitpro/devkitPPC
+        with open(os.path.join("Games", name, "CMakeLists.txt"), "w") as f:
+            f.writelines("""cmake_minimum_required(VERSION 3.20)
+project(""" + name + """)
 
-.SUFFIXES:
+set(WIILOAD "tcp:192.168.0.113")
+set(DEVKITPPC "/opt/devkitpro/devkitPPC")
+set(TARGET ${PROJECT_NAME} CACHE STRING "Name of the executable to be created.")
 
-ifeq ($(strip $(DEVKITPPC)),)
-$(error "Please set DEVKITPPC in your environment. export DEVKITPPC=<path to>devkitPPC")
-endif
+if (NOT DEFINED DEVKITPPC)
+    message(FATAL_ERROR "Please set DEVKITPPC in your environment. export DEVKITPPC=<path to>devkitPPC")
+endif ()
 
-include $(DEVKITPPC)/wii_rules
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O2 -Wall ${MACHDEP} ${INCLUDE}")
+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g ${MACHDEP}")
 
-TARGET := $(notdir $(CURDIR))
-BUILD := bin
-SOURCES := src
-DATA := data
-INCLUDES :=
+include_directories(${DEVKITPPC}/include)
+link_directories(${DEVKITPPC}/lib)
 
-CFLAGS = -g -O2 -Wall $(MACHDEP) $(INCLUDE)
-CXXFLAGS = $(CFLAGS)
-LDFLAGS = -g $(MACHDEP) -Wl,-Map,$(notdir $@).map
+file(GLOB_RECURSE SOURCES src/main.c)
+file(GLOB_RECURSE BINFILES data/*.*)
 
-LIBS := -lwiiuse -lbte -logc -lm
-LIBDIRS :=
+add_executable(${TARGET} ${SOURCES} ${BINFILES})
 
-ifneq ($(BUILD),$(notdir $(CURDIR)))
-export OUTPUT := $(CURDIR)/$(TARGET)
-export VPATH := $(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) $(foreach dir,$(DATA),$(CURDIR)/$(dir))
-export DEPSDIR := $(CURDIR)/$(BUILD)
+target_link_libraries(${TARGET} wiiuse bte ogc m)
+set_target_properties(${TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
-CFILES := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
-CPPFILES := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
-sFILES := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
-SFILES := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
-BINFILES := $(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
-
-ifeq ($(strip $(CPPFILES)),)
-	export LD := $(CC)
-else
-	export LD := $(CXX)
-endif
-
-export OFILES_SOURCES := $(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(sFILES:.s=.o) $(SFILES:.S=.o)
-export OFILES := $(OFILES_SOURCES)
-export OFILES := $(OFILES_BIN) $(OFILES_SOURCES)
-export INCLUDE := $(foreach dir,$(INCLUDES),-iquote $(CURDIR)/$(dir)) $(foreach dir,$(LIBDIRS),-I$(dir)/include) \\
-				-I$(CURDIR)/$(BUILD) -I$(LIBOGC_INC)
-export LIBPATHS := -L$(LIBOGC_LIB) $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
-export OUTPUT := $(CURDIR)/$(TARGET)
-
-.PHONY: $(BUILD) clean
-
-$(BUILD):
-	[ -d $@ ] || mkdir -p $@
-	$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
-
-clean:
-	rm -rf $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
-
-run:
-	wiiload $(TARGET).dol
-
-else
-
-DEPENDS := $(OFILES:.o=.d)
-
-$(OUTPUT).dol: $(OUTPUT).elf
-$(OUTPUT).elf: $(OFILES)
-
--include $(DEPENDS)
-
-endif
-
-.PHONY: all $(BUILD) clean
-all: $(BUILD)
-	sudo mv $(OUTPUT).elf $(BUILD)/boot.elf
-	sudo mv $(OUTPUT).dol $(BUILD)/$(TARGET).dol
-	sudo cp meta.xml $(BUILD)/meta.xml
-	sudo cp $(foreach dir,$(DATA),$(wildcard $(dir)/*.*)) $(BUILD)
-	@echo "===== Done! Now run \\"make run\\" to upload the program to the Wii. ====="
+add_custom_target(copy_files COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/meta.xml ${CMAKE_SOURCE_DIR}/bin/meta.xml)
+add_dependencies(${TARGET} copy_files)
+add_custom_target(run COMMAND wiiload ${CMAKE_SOURCE_DIR}/bin/${TARGET} DEPENDS ${TARGET})
 """)
 
         with open(os.path.join("Games", name, "meta.xml"), "w") as f:
