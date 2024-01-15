@@ -85,7 +85,7 @@ int main()
     printf("P1 Controls: Up/Down\n");
     printf("P2 Controls: 1/2\n");
     printf("Randomize color: B\n");
-    printf("Start game: A\n");
+    printf("Start/restart game: A\n");
     printf("Exit: Home\n");
 
     while (1)
@@ -175,6 +175,9 @@ int main()
 
     free(fontBuffer);
     free(musicBuffer);
+
+    MP3Player_Stop();
+    GRRLIB_FreeTTF(font);
     GRRLIB_Exit();
 
     return EXIT_SUCCESS;

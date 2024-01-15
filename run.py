@@ -29,6 +29,20 @@ def usage():
     print("  help - Show this help message")
 
 
+def upload_project(selection):
+    for root_dir in [ROOT, LOCAL]:
+        destination = os.path.join(root_dir, "apps", os.path.dirname(selection)
+                                   .replace(f"{PROJECT_DIR}/", "").replace("/bin", ""))
+        os.makedirs(destination, exist_ok=True)
+        shutil.copy(selection, os.path.join(destination, os.path.basename(selection)))
+
+        for file in os.listdir(os.path.dirname(selection)):
+            if any(file.endswith(ext) for ext in DATA_EXTENSIONS):
+                shutil.copy(os.path.join(os.path.dirname(selection), file), destination)
+
+        print(f"Uploaded {os.path.basename(selection)} to {destination}.")
+
+
 def main():
     if len(sys.argv) < 2:
         usage()
@@ -51,7 +65,8 @@ def main():
                     project_files.extend(os.path.join(bin_path, elf) for elf in elf_files)
 
                 for index, file in enumerate(project_files, start=1):
-                    print(f"  {index}) {file.replace(root_dir, '').replace('/apps/', '')[:-9]}")
+                    f = file.replace(root_dir, '').replace('/apps/', '').replace(os.path.basename(file), '')[:-1]
+                    print(f"  {index}) {f}")
             except FileNotFoundError:
                 print("  No projects found.")
 
@@ -70,26 +85,35 @@ def main():
             project_files.extend(os.path.join(bin_path, elf) for elf in elf_files)
 
         for index, file in enumerate(project_files, start=1):
-            print(f"{index}) {file.replace(f'{PROJECT_DIR}/', '').replace('/bin', '')}")
+            f = file.replace(PROJECT_DIR, '').replace('/bin/', '').replace(os.path.basename(file), '')[1:]
+            print(f"  {index}) {f}")
 
-        choice = 0
-        while choice < 1 or choice > len(project_files):
-            choice = int(input("Choose a project to upload: ")) - 1
-            selection = project_files[choice]
+        choice = ""
+        while not choice.isdigit() or int(choice) < 1 or int(choice) > len(project_files):
+            choice = input("Choose a project to upload: ")
 
-            for root_dir in [ROOT, LOCAL]:
-                project = os.path.join(root_dir, "apps",
-                                       os.path.dirname(selection).replace(f"{PROJECT_DIR}/", "").replace("/bin", ""))
-                os.makedirs(project, exist_ok=True)
-                shutil.copy(selection, os.path.join(project, os.path.basename(selection)))
+            if not choice.isdigit() or int(choice) < 1 or int(choice) > len(project_files):
+                print("Invalid choice.")
+            else:
+                selection = project_files[int(choice) - 1]
+                upload_project(selection)
+    elif sys.argv[1] == "upload-all":
+        check_usb()
 
-                for file in os.listdir(os.path.dirname(selection)):
-                    if any(file.endswith(ext) for ext in DATA_EXTENSIONS):
-                        shutil.copy(os.path.join(os.path.dirname(selection), file), project)
+        project_dirs = [directory for directory in os.listdir(PROJECT_DIR) if
+                        os.path.isdir(os.path.join(PROJECT_DIR, directory))]
+        project_files = []
 
-                print(f"Uploaded {selection} to {project}.")
+        for project_dir in project_dirs:
+            bin_path = os.path.join(PROJECT_DIR, project_dir, "bin")
+            elf_files = [file for file in os.listdir(bin_path if os.path.isdir(bin_path) else PROJECT_DIR) if
+                         file.endswith(".elf")]
+            project_files.extend(os.path.join(bin_path, elf) for elf in elf_files)
+
+        for file in project_files:
+            upload_project(file)
     elif sys.argv[1] == "init":
-        name = input("Project name: ").capitalize()
+        name = input("Project name: ")
         author = input("Author: ")
 
         os.makedirs(os.path.join(PROJECT_DIR, name, "src"), exist_ok=True)
@@ -104,10 +128,11 @@ def main():
             f.write("set(TARGET ${PROJECT_NAME})\n\n")
             f.write("file(GLOB_RECURSE SOURCES src/main.c)\n")
             f.write("file(GLOB_RECURSE BINFILES data/*.*)\n\n")
-            f.write("add_executable(${TARGET} ${SOURCES} ${BINFILES})\n\n")
-            f.write("target_link_libraries(${TARGET} wiiuse bte ogc m)\n")
-            f.write("set_target_properties(${TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)\n")
-            f.write("file(COPY ${PROJECT_SOURCE_DIR}/meta.xml DESTINATION ${PROJECT_SOURCE_DIR}/bin)\n")
+            f.write("add_executable(${TARGET}.elf ${SOURCES})\n\n")
+            f.write("target_link_libraries(${TARGET}.elf wiiuse bte ogc m)\n")
+            f.write("set_target_properties(${TARGET}.elf PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)"
+                    "\n")
+            f.write("file(COPY ${PROJECT_SOURCE_DIR}/meta.xml ${BINFILES} DESTINATION ${PROJECT_SOURCE_DIR}/bin)\n")
             f.write("add_custom_target(${TARGET}_run COMMAND wiiload ${PROJECT_SOURCE_DIR}/bin/${TARGET}.dol DEPENDS "
                     "${TARGET})\n")
 

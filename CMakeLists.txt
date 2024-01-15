@@ -25,3 +25,4 @@ link_directories(
 add_subdirectory(Projects/First)
 add_subdirectory(Projects/OnlineExample)
 add_subdirectory(Projects/Pong)
+add_subdirectory(Projects/SpaceInvaders)
