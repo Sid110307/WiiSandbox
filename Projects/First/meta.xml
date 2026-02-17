@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <app version="1">
-    <name>First</name>
-    <coder>Sid110307</coder>
-    <version>v1.0</version>
-    <short_description>First</short_description>
-    <long_description>My first application/game designed for Wii.</long_description>
+	<name>First</name>
+	<coder>Sid110307</coder>
+	<version>1.0</version>
+	<release_date>20240115000000</release_date>
+	<short_description>First</short_description>
+	<long_description>My first app designed for Wii.</long_description>
 </app>

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <app version="1">
-    <name>OnlineExample</name>
-    <coder>devKitPro</coder>
-    <version>v1.0</version>
-    <short_description>Wii Homebrew Template</short_description>
-    <long_description>This is a template for a Wii Homebrew application.</long_description>
+	<name>OnlineExample</name>
+	<coder>devkitPro</coder>
+	<version>1.0</version>
+	<release_date>20240115000000</release_date>
+	<short_description>Wii Homebrew Template</short_description>
+	<long_description>This is a template for a Wii Homebrew application.</long_description>
 </app>

@@ -1,0 +1,25 @@
+set(CMAKE_SYSTEM_NAME Generic)
+set(CMAKE_SYSTEM_PROCESSOR powerpc)
+
+if (NOT DEFINED ENV{DEVKITPRO})
+    message(FATAL_ERROR "DEVKITPRO environment variable is not set")
+endif ()
+
+set(DEVKITPRO "$ENV{DEVKITPRO}")
+set(DEVKITPPC "${DEVKITPRO}/devkitPPC")
+
+set(CMAKE_C_COMPILER "${DEVKITPPC}/bin/powerpc-eabi-gcc.exe")
+set(CMAKE_CXX_COMPILER "${DEVKITPPC}/bin/powerpc-eabi-g++.exe")
+set(CMAKE_ASM_COMPILER "${DEVKITPPC}/bin/powerpc-eabi-gcc.exe")
+set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+
+set(CMAKE_FIND_ROOT_PATH
+    "${DEVKITPPC}/powerpc-eabi"
+    "${DEVKITPRO}/libogc"
+    "${DEVKITPRO}/portlibs/ppc"
+    "${DEVKITPRO}/portlibs/wii"
+)
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)

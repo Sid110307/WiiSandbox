@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <app version="1">
-    <name>Spaceinvaders</name>
+    <name>SpaceInvaders</name>
     <coder>Sid110307</coder>
     <version>1.0</version>
-    <short_description>Short description</short_description>
-    <long_description>Long description</long_description>
+    <release_date>20240115000000</release_date>
+    <short_description>Space Invaders game</short_description>
+    <long_description>A simple implementation of the classic Space Invaders game.</long_description>
 </app>

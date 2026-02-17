@@ -1,28 +1,33 @@
 cmake_minimum_required(VERSION 3.20)
 project(WiiSandbox)
 
-set(WIILOAD "tcp:192.168.0.113")
-set(DEVKITPPC "$ENV{DEVKITPRO}/devkitPPC")
-set(DEPS "-DGEKKO -mrvl -mcpu=750 -meabi -mhard-float -Wl,-Map,${PROJECT_NAME}.elf.map")
+set(WIILOAD "tcp:192.168.0.118" CACHE STRING "The IP address of the Wii")
+if (NOT DEFINED ENV{DEVKITPRO})
+    message(FATAL_ERROR "DEVKITPRO environment variable is not set")
+endif ()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O2 -Wall ${DEPS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g ${DEPS}")
+set(DEVKITPPC "$ENV{DEVKITPRO}/devkitPPC" CACHE STRING "The path to devkitPPC")
+set(GEKKO_FLAGS -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float)
+
+add_compile_options(-g -Os -Wall -Wextra ${GEKKO_FLAGS})
+add_link_options(${GEKKO_FLAGS})
 
 include_directories(
-        ${DEVKITPPC}/include
-        $ENV{DEVKITPRO}/libogc/include
-        $ENV{DEVKITPRO}/portlibs/ppc/include
-        $ENV{DEVKITPRO}/portlibs/wii/include
+    $ENV{DEVKITPRO}/libogc/include
+    $ENV{DEVKITPRO}/portlibs/ppc/include
+    $ENV{DEVKITPRO}/portlibs/wii/include
 )
 link_directories(
-        ${DEVKITPPC}/lib
-        $ENV{DEVKITPRO}/libogc/lib/wii
-        $ENV{DEVKITPRO}/portlibs/ppc/lib
-        $ENV{DEVKITPRO}/portlibs/wii/lib
+    $ENV{DEVKITPRO}/libogc/lib/wii
+    $ENV{DEVKITPRO}/portlibs/ppc/lib
+    $ENV{DEVKITPRO}/portlibs/wii/lib
 )
 
-add_subdirectory(Projects/First)
-add_subdirectory(Projects/OnlineExample)
-add_subdirectory(Projects/Pong)
-add_subdirectory(Projects/SpaceInvaders)
+file(GLOB CHILDREN RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/Projects" "${CMAKE_CURRENT_SOURCE_DIR}/Projects/*")
+foreach (child ${CHILDREN})
+    if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Projects/${child}/CMakeLists.txt")
+        add_subdirectory("Projects/${child}")
+    endif ()
+endforeach ()
+
+add_custom_target(build_all DEPENDS ${CHILDREN} COMMENT "Building all projects")

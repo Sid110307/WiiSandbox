@@ -71,16 +71,31 @@ int main()
 {
     initialize();
 
-    long size;
-    void* fontBuffer = readFile("sd:/apps/Pong/font.ttf", &size);
-    void* musicBuffer = readFile("sd:/apps/Pong/music.mp3", &size);
+    long fontSize = 0, musicSize = 0;
+    void* fontBuffer = readFile("sd:/apps/Pong/font.ttf", &fontSize);
+    void* musicBuffer = readFile("sd:/apps/Pong/music.mp3", &musicSize);
 
+    if (!fontBuffer || !musicBuffer)
+    {
+        GRRLIB_Exit();
+        return EXIT_FAILURE;
+    }
+
+    GRRLIB_ttfFont* font = GRRLIB_LoadTTF(fontBuffer, fontSize);
+    if (!font)
+    {
+        free(fontBuffer);
+        free(musicBuffer);
+        GRRLIB_Exit();
+
+        return EXIT_FAILURE;
+    }
+
+    int gameStarted = 0, gameOver = 0, winner = 0, player1Score = 0, player2Score = 0;
     f32 player1Y = (SCREEN_HEIGHT - PLAYER_HEIGHT) / 2.0f, player2Y = (SCREEN_HEIGHT - PLAYER_HEIGHT) / 2.0f;
     f32 ballX = (SCREEN_WIDTH - BALL_SIZE) / 2.0f, ballY = (SCREEN_HEIGHT - BALL_SIZE) / 2.0f;
     f32 ballSpeedX = 0, ballSpeedY = 0;
     u32 color = 0xFFFFFFFF;
-    int gameStarted = 0, player1Score = 0, player2Score = 0;
-    GRRLIB_ttfFont* font = GRRLIB_LoadTTF(fontBuffer, size);
 
     printf("P1 Controls: Up/Down\n");
     printf("P2 Controls: 1/2\n");
@@ -91,84 +106,134 @@ int main()
     while (1)
     {
         WPAD_ScanPads();
-        if (!MP3Player_IsPlaying()) MP3Player_PlayBuffer(musicBuffer, size, NULL);
+        if (!MP3Player_IsPlaying()) MP3Player_PlayBuffer(musicBuffer, musicSize, NULL);
 
         if (WPAD_ButtonsDown(0) & WPAD_BUTTON_HOME) break;
         if (WPAD_ButtonsHeld(0) & WPAD_BUTTON_UP && player1Y > 0) player1Y -= PLAYER_SPEED;
         if (WPAD_ButtonsHeld(0) & WPAD_BUTTON_DOWN && player1Y < SCREEN_HEIGHT - PLAYER_HEIGHT)
             player1Y += PLAYER_SPEED;
-        if (WPAD_ButtonsHeld(0) & WPAD_BUTTON_1 && player2Y > 0) player2Y -= PLAYER_SPEED;
-        if (WPAD_ButtonsHeld(0) & WPAD_BUTTON_2 && player2Y < SCREEN_HEIGHT - PLAYER_HEIGHT) player2Y += PLAYER_SPEED;
-        if (WPAD_ButtonsDown(0) & WPAD_BUTTON_B) color = rand() % 0xFFFFFFFF;
-        if (!gameStarted && (WPAD_ButtonsDown(0) & WPAD_BUTTON_A))
-        {
-            gameStarted = 1;
-            player1Score = 0;
-            player2Score = 0;
 
-            ballX = (SCREEN_WIDTH - BALL_SIZE) / 2.0f;
-            ballY = (SCREEN_HEIGHT - BALL_SIZE) / 2.0f;
-            ballSpeedX = INITIAL_BALL_SPEED_X;
-            ballSpeedY = INITIAL_BALL_SPEED_Y;
+        if (WPAD_ButtonsHeld(0) & WPAD_BUTTON_1 && player2Y > 0) player2Y -= PLAYER_SPEED;
+        if (WPAD_ButtonsHeld(0) & WPAD_BUTTON_2 && player2Y < SCREEN_HEIGHT - PLAYER_HEIGHT)
+            player2Y += PLAYER_SPEED;
+
+        if (WPAD_ButtonsDown(0) & WPAD_BUTTON_B)
+        {
+            const u32 r = rand() & 0xFF;
+            const u32 g = rand() & 0xFF;
+            const u32 b = rand() & 0xFF;
+            color = r << 24 | g << 16 | b << 8 | 0xFF;
         }
 
-        if (gameStarted)
+        if (WPAD_ButtonsDown(0) & WPAD_BUTTON_A)
         {
-            if (ballY <= BALL_SIZE || ballY >= SCREEN_HEIGHT - BALL_SIZE) ballSpeedY = -ballSpeedY;
-            if ((ballX <= PLAYER_WIDTH && ballY >= player1Y && ballY <= player1Y + PLAYER_HEIGHT) ||
-                (ballX >= SCREEN_WIDTH - PLAYER_WIDTH - BALL_SIZE && ballY >= player2Y &&
-                 ballY <= player2Y + PLAYER_HEIGHT))
-                ballSpeedX = -ballSpeedX;
-
-            if (ballX <= 0)
+            if (gameOver)
             {
-                player2Score++;
-
-                ballX = (SCREEN_WIDTH - BALL_SIZE) / 2.0f;
-                ballY = (SCREEN_HEIGHT - BALL_SIZE) / 2.0f;
-                ballSpeedX = INITIAL_BALL_SPEED_X;
-                ballSpeedY = INITIAL_BALL_SPEED_Y;
-            }
-            if (ballX >= SCREEN_WIDTH - BALL_SIZE)
-            {
-                player1Score++;
-
-                ballX = (SCREEN_WIDTH - BALL_SIZE) / 2.0f;
-                ballY = (SCREEN_HEIGHT - BALL_SIZE) / 2.0f;
-                ballSpeedX = INITIAL_BALL_SPEED_X;
-                ballSpeedY = INITIAL_BALL_SPEED_Y;
-            }
-
-            if (player1Score == WIN_SCORE || player2Score == WIN_SCORE)
-            {
-                GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 8, SCREEN_HEIGHT / 2 - 8, font, "GAME OVER", 1, color);
-                GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 8, SCREEN_HEIGHT / 2 + 8, font,
-                                 player1Score == WIN_SCORE ? "P1 WINS!" : "P2 WINS!", 1, color);
-
-                gameStarted = 0;
+                gameOver = 0;
+                winner = 0;
                 player1Score = 0;
                 player2Score = 0;
+            }
+
+            if (!gameStarted)
+            {
+                gameStarted = 1;
 
                 ballX = (SCREEN_WIDTH - BALL_SIZE) / 2.0f;
                 ballY = (SCREEN_HEIGHT - BALL_SIZE) / 2.0f;
-                ballSpeedX = 0;
-                ballSpeedY = 0;
+                ballSpeedX = rand() & 1 ? INITIAL_BALL_SPEED_X : -INITIAL_BALL_SPEED_X;
+                ballSpeedY = rand() & 1 ? INITIAL_BALL_SPEED_Y : -INITIAL_BALL_SPEED_Y;
             }
-
-            ballX += ballSpeedX;
-            ballY += ballSpeedY;
         }
 
-        GRRLIB_Circle(ballX, ballY, BALL_SIZE, color, 1);
+        if (gameStarted && !gameOver)
+        {
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+            if (ballY <= 0)
+            {
+                ballY = 0;
+                ballSpeedY = -ballSpeedY;
+            }
+            else if (ballY >= SCREEN_HEIGHT - BALL_SIZE)
+            {
+                ballY = SCREEN_HEIGHT - BALL_SIZE;
+                ballSpeedY = -ballSpeedY;
+            }
+
+            const f32 p1X = 0;
+            const f32 p2X = SCREEN_WIDTH - PLAYER_WIDTH;
+            const int overlapP1Y = ballY + BALL_SIZE >= player1Y && ballY <= player1Y + PLAYER_HEIGHT;
+            const int hitP1X = ballX <= p1X + PLAYER_WIDTH && ballX + BALL_SIZE >= p1X;
+
+            if (hitP1X && overlapP1Y && ballSpeedX < 0)
+            {
+                ballX = p1X + PLAYER_WIDTH;
+                ballSpeedX = -ballSpeedX;
+            }
+
+            const int overlapP2Y = ballY + BALL_SIZE >= player2Y && ballY <= player2Y + PLAYER_HEIGHT;
+            const int hitP2X = ballX + BALL_SIZE >= p2X && ballX <= p2X + PLAYER_WIDTH;
+
+            if (hitP2X && overlapP2Y && ballSpeedX > 0)
+            {
+                ballX = p2X - BALL_SIZE;
+                ballSpeedX = -ballSpeedX;
+            }
+
+            if (ballX + BALL_SIZE < 0)
+            {
+                player2Score++;
+                gameStarted = 0;
+
+                ballX = (SCREEN_WIDTH - BALL_SIZE) / 2.0f;
+                ballY = (SCREEN_HEIGHT - BALL_SIZE) / 2.0f;
+                ballSpeedX = ballSpeedY = 0;
+            }
+            else if (ballX > SCREEN_WIDTH)
+            {
+                player1Score++;
+                gameStarted = 0;
+
+                ballX = (SCREEN_WIDTH - BALL_SIZE) / 2.0f;
+                ballY = (SCREEN_HEIGHT - BALL_SIZE) / 2.0f;
+                ballSpeedX = ballSpeedY = 0;
+            }
+
+            if (player1Score >= WIN_SCORE || player2Score >= WIN_SCORE)
+            {
+                gameOver = 1;
+                gameStarted = 0;
+                winner = player1Score >= WIN_SCORE ? 1 : 2;
+
+                ballSpeedX = ballSpeedY = 0;
+                ballX = (SCREEN_WIDTH - BALL_SIZE) / 2.0f;
+                ballY = (SCREEN_HEIGHT - BALL_SIZE) / 2.0f;
+            }
+        }
+
+        GRRLIB_FillScreen(0x000000FF);
+        GRRLIB_Rectangle(ballX, ballY, BALL_SIZE, BALL_SIZE, color, 1);
         GRRLIB_Rectangle(0, player1Y, PLAYER_WIDTH, PLAYER_HEIGHT, color, 1);
         GRRLIB_Rectangle(SCREEN_WIDTH - PLAYER_WIDTH, player2Y, PLAYER_WIDTH, PLAYER_HEIGHT, color, 1);
 
-        char p1Score[16], p2Score[16];
-        sprintf(p1Score, "P1: %d", player1Score);
-        sprintf(p2Score, "P2: %d", player2Score);
+        char p1ScoreStr[16], p2ScoreStr[16];
+        sprintf(p1ScoreStr, "P1: %d", player1Score);
+        sprintf(p2ScoreStr, "P2: %d", player2Score);
 
-        GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 8, 0, font, p1Score, 1, color);
-        GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 + 8, 0, font, p2Score, 1, color);
+        GRRLIB_PrintfTTF(20, 20, font, p1ScoreStr, 1, color);
+        GRRLIB_PrintfTTF(SCREEN_WIDTH - 120, 20, font, p2ScoreStr, 1, color);
+
+        if (gameOver)
+        {
+            GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 80, SCREEN_HEIGHT / 2 - 20, font, "GAME OVER", 1, color);
+            GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 80, SCREEN_HEIGHT / 2 + 0, font, winner == 1 ? "P1 WINS!" : "P2 WINS!",
+                             1, color);
+            GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT / 2 + 20, font, "Press A to restart", 1, color);
+        }
+        else if (!gameStarted)
+            GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT - 40, font, "Press A to start", 1, color);
 
         GRRLIB_Render();
     }
