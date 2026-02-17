@@ -1,0 +1,4 @@
+[submodule "Projects/WiiScript"]
+	path = Projects/WiiScript
+	url = https://github.com/Sid110307/WiiScript.git
+	branch = master
