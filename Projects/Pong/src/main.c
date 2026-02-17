@@ -217,22 +217,25 @@ int main()
         GRRLIB_Rectangle(0, player1Y, PLAYER_WIDTH, PLAYER_HEIGHT, color, 1);
         GRRLIB_Rectangle(SCREEN_WIDTH - PLAYER_WIDTH, player2Y, PLAYER_WIDTH, PLAYER_HEIGHT, color, 1);
 
-        char p1ScoreStr[16], p2ScoreStr[16];
-        sprintf(p1ScoreStr, "P1: %d", player1Score);
-        sprintf(p2ScoreStr, "P2: %d", player2Score);
-
-        GRRLIB_PrintfTTF(20, 20, font, p1ScoreStr, 1, color);
-        GRRLIB_PrintfTTF(SCREEN_WIDTH - 120, 20, font, p2ScoreStr, 1, color);
-
-        if (gameOver)
+        if (font)
         {
-            GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 80, SCREEN_HEIGHT / 2 - 20, font, "GAME OVER", 1, color);
-            GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 80, SCREEN_HEIGHT / 2 + 0, font, winner == 1 ? "P1 WINS!" : "P2 WINS!",
-                             1, color);
-            GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT / 2 + 20, font, "Press A to restart", 1, color);
+            char p1ScoreStr[16], p2ScoreStr[16];
+            sprintf(p1ScoreStr, "P1: %d", player1Score);
+            sprintf(p2ScoreStr, "P2: %d", player2Score);
+
+            GRRLIB_PrintfTTF(20, 20, font, p1ScoreStr, 1, color);
+            GRRLIB_PrintfTTF(SCREEN_WIDTH - 120, 20, font, p2ScoreStr, 1, color);
+
+            if (gameOver)
+            {
+                GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 80, SCREEN_HEIGHT / 2 - 20, font, "GAME OVER", 1, color);
+                GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 80, SCREEN_HEIGHT / 2 + 0, font,
+                                 winner == 1 ? "P1 WINS!" : "P2 WINS!", 1, color);
+                GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT / 2 + 20, font, "Press A to restart", 1, color);
+            }
+            else if (!gameStarted)
+                GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT - 40, font, "Press A to start", 1, color);
         }
-        else if (!gameStarted)
-            GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT - 40, font, "Press A to start", 1, color);
 
         GRRLIB_Render();
     }

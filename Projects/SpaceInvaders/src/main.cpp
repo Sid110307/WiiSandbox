@@ -102,8 +102,16 @@ FileData readFile(const char* path)
         return out;
     }
 
-    fread(out.data, 1, static_cast<size_t>(out.size), file);
+    const size_t read = fread(out.data, 1, static_cast<size_t>(out.size), file);
     fclose(file);
+
+    if (read != static_cast<size_t>(out.size))
+    {
+        printf("Failed to read file \"%s\"!\n", path);
+        free(out.data);
+        out.data = nullptr;
+        out.size = 0;
+    }
 
     return out;
 }
@@ -249,8 +257,8 @@ int main()
     GRRLIB_ttfFont* font = GRRLIB_LoadTTFFromFile("sd:/apps/SpaceInvaders/font.ttf");
     if (!font) printf("Failed to load font!\n");
 
-    GRRLIB_texImg* player_img = GRRLIB_LoadTexture(static_cast<u8*>(playerPng.data));
-    GRRLIB_texImg* enemy_img = GRRLIB_LoadTexture(static_cast<u8*>(enemyPng.data));
+    GRRLIB_texImg* player_img = GRRLIB_LoadTexturePNG(static_cast<u8*>(playerPng.data));
+    GRRLIB_texImg* enemy_img = GRRLIB_LoadTexturePNG(static_cast<u8*>(enemyPng.data));
     if (!player_img || !enemy_img)
     {
         GRRLIB_FreeTTF(font);
@@ -305,12 +313,15 @@ int main()
         for (const auto& e : game.enemies)
             if (e.alive) GRRLIB_DrawImg(e.x, e.y, enemy_img, 0, 1, 1, 0xFFFFFFFF);
 
-        char scoreText[32];
-        sprintf(scoreText, "Score: %d", game.score);
-        GRRLIB_PrintfTTF(10, 10, font, scoreText, 24, 0xFFFFFFFF);
-        char levelText[32];
-        sprintf(levelText, "Level: %d", game.currentLevel);
-        GRRLIB_PrintfTTF(SCREEN_WIDTH - 150, 10, font, levelText, 24, 0xFFFFFFFF);
+        if (font)
+        {
+            char scoreText[32];
+            sprintf(scoreText, "Score: %d", game.score);
+            GRRLIB_PrintfTTF(10, 10, font, scoreText, 24, 0xFFFFFFFF);
+            char levelText[32];
+            sprintf(levelText, "Level: %d", game.currentLevel);
+            GRRLIB_PrintfTTF(SCREEN_WIDTH - 150, 10, font, levelText, 24, 0xFFFFFFFF);
+        }
 
         GRRLIB_Render();
     }
