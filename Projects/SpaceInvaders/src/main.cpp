@@ -236,23 +236,18 @@ int main()
 {
     initialize();
 
-    const auto fontFile = readFile("sd:/apps/Pong/font.ttf");
-    const auto musicFile = readFile("sd:/apps/Pong/music.mp3");
+    const auto musicFile = readFile("sd:/apps/SpaceInvaders/music.mp3");
     const auto playerPng = readFile("sd:/apps/SpaceInvaders/player.png");
     const auto enemyPng = readFile("sd:/apps/SpaceInvaders/enemy.png");
 
-    if (!fontFile.ok() || !musicFile.ok() || !playerPng.ok() || !enemyPng.ok())
+    if (!musicFile.ok() || !playerPng.ok() || !enemyPng.ok())
     {
         GRRLIB_Exit();
         return EXIT_FAILURE;
     }
 
-    GRRLIB_ttfFont* font = GRRLIB_LoadTTF(static_cast<u8*>(fontFile.data), fontFile.size);
-    if (!font)
-    {
-        GRRLIB_Exit();
-        return EXIT_FAILURE;
-    }
+    GRRLIB_ttfFont* font = GRRLIB_LoadTTFFromFile("sd:/apps/SpaceInvaders/font.ttf");
+    if (!font) printf("Failed to load font!\n");
 
     GRRLIB_texImg* player_img = GRRLIB_LoadTexture(static_cast<u8*>(playerPng.data));
     GRRLIB_texImg* enemy_img = GRRLIB_LoadTexture(static_cast<u8*>(enemyPng.data));

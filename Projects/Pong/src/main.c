@@ -61,8 +61,16 @@ void* readFile(const char* path, long* size)
     fseek(file, 0, SEEK_SET);
 
     void* buffer = malloc(*size);
-    fread(buffer, 1, *size, file);
+    const size_t read = fread(buffer, 1, *size, file);
     fclose(file);
+
+    if (read != (size_t)*size)
+    {
+        printf("Failed to read file \"%s\"!\n", path);
+        free(buffer);
+
+        return NULL;
+    }
 
     return buffer;
 }
@@ -71,25 +79,16 @@ int main()
 {
     initialize();
 
-    long fontSize = 0, musicSize = 0;
-    void* fontBuffer = readFile("sd:/apps/Pong/font.ttf", &fontSize);
+    long musicSize = 0;
     void* musicBuffer = readFile("sd:/apps/Pong/music.mp3", &musicSize);
-
-    if (!fontBuffer || !musicBuffer)
+    if (!musicBuffer)
     {
         GRRLIB_Exit();
         return EXIT_FAILURE;
     }
 
-    GRRLIB_ttfFont* font = GRRLIB_LoadTTF(fontBuffer, fontSize);
-    if (!font)
-    {
-        free(fontBuffer);
-        free(musicBuffer);
-        GRRLIB_Exit();
-
-        return EXIT_FAILURE;
-    }
+    GRRLIB_ttfFont* font = GRRLIB_LoadTTFFromFile("sd:/apps/Pong/font.ttf");
+    if (!font) printf("Failed to load font!\n");
 
     int gameStarted = 0, gameOver = 0, winner = 0, player1Score = 0, player2Score = 0;
     f32 player1Y = (SCREEN_HEIGHT - PLAYER_HEIGHT) / 2.0f, player2Y = (SCREEN_HEIGHT - PLAYER_HEIGHT) / 2.0f;
@@ -238,9 +237,7 @@ int main()
         GRRLIB_Render();
     }
 
-    free(fontBuffer);
     free(musicBuffer);
-
     MP3Player_Stop();
     GRRLIB_FreeTTF(font);
     GRRLIB_Exit();

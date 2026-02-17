@@ -86,7 +86,7 @@ Uploaded project to /media/usb/apps/ExampleProject2.
 >
 > ```bash
 > $ python3 run.py list -r /path/to/mounted/drive
-> $ python3 run.py list -r E:
+> $ python3 run.py list -r E:\
 > ```
 
 > ### Project Structure
@@ -106,6 +106,7 @@ Uploaded project to /media/usb/apps/ExampleProject2.
 > ├── boot.dol  # Compiled homebrew executable
 > ├── icon.png  # 128x48 icon
 > ├── meta.xml  # Metadata file
+> ├── ...       # Other assets
 > ```
 
 ## License
