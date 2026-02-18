@@ -4,13 +4,11 @@
 #include <vector>
 #include <algorithm>
 
-extern "C" {
 #include <gccore.h>
 #include <wiiuse/wpad.h>
 #include <grrlib.h>
 #include <asndlib.h>
 #include <mp3player.h>
-}
 
 constexpr int SCREEN_WIDTH = 640, SCREEN_HEIGHT = 480;
 constexpr int PLAYER_SPEED = 5, BULLET_SPEED = 8, NUM_BULLETS = 5;
@@ -245,6 +243,7 @@ int main()
     initialize();
 
     const auto musicFile = readFile("sd:/apps/SpaceInvaders/music.mp3");
+    const auto fontFile = readFile("sd:/apps/SpaceInvaders/font.ttf");
     const auto playerPng = readFile("sd:/apps/SpaceInvaders/player.png");
     const auto enemyPng = readFile("sd:/apps/SpaceInvaders/enemy.png");
 
@@ -254,7 +253,7 @@ int main()
         return EXIT_FAILURE;
     }
 
-    GRRLIB_ttfFont* font = GRRLIB_LoadTTFFromFile("sd:/apps/SpaceInvaders/font.ttf");
+    GRRLIB_ttfFont* font = GRRLIB_LoadTTF(static_cast<u8*>(fontFile.data), fontFile.size);
     if (!font) printf("Failed to load font!\n");
 
     GRRLIB_texImg* player_img = GRRLIB_LoadTexturePNG(static_cast<u8*>(playerPng.data));

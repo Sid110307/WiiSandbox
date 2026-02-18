@@ -13,6 +13,7 @@
 #define PLAYER_WIDTH 10
 #define PLAYER_HEIGHT 60
 
+#define FONT_SIZE 24
 #define BALL_SIZE 10
 #define WIN_SCORE 10
 #define PLAYER_SPEED 4
@@ -79,15 +80,16 @@ int main()
 {
     initialize();
 
-    long musicSize = 0;
+    long musicSize = 0, fontSize = 0;
     void* musicBuffer = readFile("sd:/apps/Pong/music.mp3", &musicSize);
-    if (!musicBuffer)
+    void* fontBuffer = readFile("sd:/apps/Pong/font.ttf", &fontSize);
+    if (!musicBuffer || !fontBuffer)
     {
         GRRLIB_Exit();
         return EXIT_FAILURE;
     }
 
-    GRRLIB_ttfFont* font = GRRLIB_LoadTTFFromFile("sd:/apps/Pong/font.ttf");
+    GRRLIB_ttfFont* font = GRRLIB_LoadTTF(fontBuffer, fontSize);
     if (!font) printf("Failed to load font!\n");
 
     int gameStarted = 0, gameOver = 0, winner = 0, player1Score = 0, player2Score = 0;
@@ -223,18 +225,20 @@ int main()
             sprintf(p1ScoreStr, "P1: %d", player1Score);
             sprintf(p2ScoreStr, "P2: %d", player2Score);
 
-            GRRLIB_PrintfTTF(20, 20, font, p1ScoreStr, 1, color);
-            GRRLIB_PrintfTTF(SCREEN_WIDTH - 120, 20, font, p2ScoreStr, 1, color);
+            GRRLIB_PrintfTTF(20, 20, font, p1ScoreStr, FONT_SIZE, color);
+            GRRLIB_PrintfTTF(SCREEN_WIDTH - 120, 20, font, p2ScoreStr, FONT_SIZE, color);
 
             if (gameOver)
             {
-                GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 80, SCREEN_HEIGHT / 2 - 20, font, "GAME OVER", 1, color);
+                GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 80, SCREEN_HEIGHT / 2 - 20, font, "GAME OVER", FONT_SIZE, color);
                 GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 80, SCREEN_HEIGHT / 2 + 0, font,
-                                 winner == 1 ? "P1 WINS!" : "P2 WINS!", 1, color);
-                GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT / 2 + 20, font, "Press A to restart", 1, color);
+                                 winner == 1 ? "P1 WINS!" : "P2 WINS!", FONT_SIZE, color);
+                GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT / 2 + 20, font, "Press A to restart", FONT_SIZE,
+                                 color);
             }
             else if (!gameStarted)
-                GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT - 40, font, "Press A to start", 1, color);
+                GRRLIB_PrintfTTF(SCREEN_WIDTH / 2 - 120, SCREEN_HEIGHT - 40, font, "Press A to start", FONT_SIZE,
+                                 color);
         }
 
         GRRLIB_Render();
