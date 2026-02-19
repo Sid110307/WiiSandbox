@@ -26,6 +26,7 @@ static GXRModeObj* screenMode = NULL;
 
 void initialize()
 {
+    SYS_STDIO_Report(true);
     srand(time(NULL));
 
     VIDEO_Init();

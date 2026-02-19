@@ -9,7 +9,7 @@ static GXRModeObj* rmode = NULL;
 //---------------------------------------------------------------------------------
 int main()
 {
-//---------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------
 
     // Initialise the video system
     VIDEO_Init();
@@ -43,7 +43,6 @@ int main()
     VIDEO_WaitVSync();
     if (rmode->viTVMode & VI_NON_INTERLACE) VIDEO_WaitVSync();
 
-
     // The console understands VT terminal escape codes
     // This positions the cursor on row 2, column 0
     // we can use variables for this with format codes too
@@ -54,7 +53,6 @@ int main()
 
     while (1)
     {
-
         // Call WPAD_ScanPads each loop, this reads the latest controller states
         WPAD_ScanPads();
 

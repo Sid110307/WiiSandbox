@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <app version="1">
-	<name>Pong</name>
-	<coder>Sid110307</coder>
-	<version>1.0</version>
-	<release_date>20240115000000</release_date>
-	<short_description>Simple Pong game</short_description>
-	<long_description>A simple pong game made using GRRLIB.</long_description>
+    <name>Pong</name>
+    <coder>Sid110307</coder>
+    <version>1.0</version>
+    <release_date>20240115000000</release_date>
+    <short_description>Simple Pong game</short_description>
+    <long_description>A simple pong game made using GRRLIB.</long_description>
 </app>
